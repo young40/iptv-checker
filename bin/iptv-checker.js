@@ -110,8 +110,49 @@ async function init() {
   }
 }
 
+function insertSpeed(item)
+{
+    var screen = ""
+
+    var streams = item.status.metadata.streams
+
+    for(i=0; i<streams.length; i++)
+    {
+        if (streams[i].coded_width && streams[i].coded_height)
+        {
+            screen = `${streams[i].coded_width}x${streams[i].coded_height}`
+            break
+        }
+    }
+
+    const lines = item.raw.split('\n')
+    const extinf = lines[0]
+
+    const line0Array = extinf.split(',')
+    line0Array[0] += ` time="${item.time/1000}" screen="${screen}"`
+
+    lines[0] = `${line0Array.join(',')}`
+
+    item.raw = `${lines.join('\n')}\n`
+}
+
+function removeSpeed(item)
+{
+    const lines = item.raw.split('\n')
+    const extinf = lines[0]
+
+    const line0Array = extinf.split(',')
+    line0Array[0] = line0Array[0].split(" time=")[0]
+
+    lines[0] = `${line0Array.join(',')}`
+
+    item.raw = `${lines.join('\n')}\n`
+}
+
 function afterEach(item) {
+  removeSpeed(item)
   if (item.status.ok) {
+    insertSpeed(item)
     writeToFile(onlineFile, item)
   } else if (item.status.reason === `Duplicate`) {
     writeToFile(duplicatesFile, item)

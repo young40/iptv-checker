@@ -92,8 +92,11 @@ class IPTVChecker {
   async checkStream(item) {
     await this.config.beforeEach(item)
 
+    var start_time = Date.now()
     item.status = await helper.checkItem.call(this, item)
     if (item.status.ok) {
+
+      item.time = Date.now() - start_time
       this.logger.debug(`OK: ${item.url}`.green)
     } else {
       this.logger.debug(`FAILED: ${item.url} (${item.status.reason})`.red)
